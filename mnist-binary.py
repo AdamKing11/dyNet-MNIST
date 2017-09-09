@@ -84,21 +84,21 @@ class cm:
 
         hidden = (datum * w1) + b1
         hidden_activation = dynet.logistic(hidden)
-        output = (hidden * w2) + b2
+        output = (hidden_activation * w2) + b2
         output_activation = dynet.logistic(output)    
         return output_activation
 
 
 if __name__ == '__main__':
     
-    (X, y), (test_X, test_y) = load_mnist(rl = True, pick = False)
+    (X, y), (test_X, test_y) = load_mnist(rl = False, pick = True)
     print("done loading")
-    print("test x,y")
-    print(X.shape, y.shape)
     print("train x,y")
+    print(X.shape, y.shape)
+    print("test x,y")
     print(test_X.shape, test_y.shape)
 
-    m = cm(input_size = X.shape[1], output_size = y.shape[1])
+    m = cm(input_size = X.shape[1], output_size = 1)
     last_loss = None
     last_mse = None
     for i in range(100):
@@ -107,6 +107,7 @@ if __name__ == '__main__':
         dynet.renew_cg()
         losses = []
         for j in tqdm(range(int(X.shape[0]/batch_size) + 1)):
+            
             for k in range(batch_size):
                 index = (j*batch_size) + k
                 if index > X.shape[0]-1: break
@@ -146,7 +147,7 @@ if __name__ == '__main__':
             dynet.renew_cg()        
             for j in range(test_X.shape[0]):
                 little_x = test_X[j].reshape(1,-1)
-                gold_y = test_y[j][0]
+                gold_y = test_y[j]
                 pred = m.one_pass(little_x)
                 mse = (gold_y - pred.npvalue()[0]) ** 2
                 errors.append(mse)

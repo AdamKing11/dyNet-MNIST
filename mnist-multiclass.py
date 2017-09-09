@@ -33,8 +33,6 @@ def load(f = 'mnist_train.csv'):
     with open(f) as rf:
         reader = csv.reader(rf, delimiter = ',')
         for line in tqdm(reader):
-            #if line[0] in ['0', '1']:
-            #    y_py.append([line[0]])
             y_onehot = [0 for _ in range(10)]
             y_onehot[int(line[0])] = 1
             y_py.append(y_onehot)
@@ -76,7 +74,7 @@ class cm:
         # output layer
         self.layers.append(self.add_layer(hidden_size, output_size))
         # 4.0 for logistic
-        self.trainer = dynet.SimpleSGDTrainer(m=self.model, learning_rate=.01)
+        self.trainer = dynet.SimpleSGDTrainer(m=self.model, learning_rate=.001)
 
 
     def add_layer(self, in_size, output_size):
@@ -95,7 +93,7 @@ class cm:
 
         hidden = (datum * w1) + b1
         hidden_activation = dynet.logistic(hidden)
-        output = (hidden * w2) + b2
+        output = (hidden_activation * w2) + b2
         output_activation = dynet.softmax(output[0])
         #print(output_activation.npvalue())
         #sys.exit()    
@@ -114,7 +112,7 @@ if __name__ == '__main__':
     m = cm(input_size = X.shape[1], output_size = y.shape[1])
     last_loss = None
     last_acc = None
-    X = X[:10000]
+    #X = X[:10000]
     for i in range(100):
         print(i)
         losses = []
@@ -148,22 +146,24 @@ if __name__ == '__main__':
         if last_loss:
             cur_loss = total_loss.npvalue()[0]
             print('cur loss:', cur_loss)
-            print('\tdif:', last_loss - cur_loss)
+            print('\tdif:', cur_loss - last_loss)
             last_loss = cur_loss
         else:
             last_loss = total_loss.npvalue()[0]
         
         if i % 2 == 0:
+            test_size = test_X.shape[0]
             correct = 0
             dynet.renew_cg()        
-            for j in range(test_X.shape[0]):
+            for j in range(test_size):
                 little_x = test_X[j].reshape(1,-1)
                 gold_y = numpy.argmax(test_y[j])
                 pred = m.one_pass(little_x)
                 y_hat = numpy.argmax(pred.npvalue())
+                #print(gold_y, y_hat)
                 if gold_y == y_hat:
                     correct += 1
-            cur_acc = errors / 1000
+            cur_acc = correct / test_size
             if last_acc:
                 print('acc:', cur_acc)
                 print('\tdif:', cur_acc - last_acc)
