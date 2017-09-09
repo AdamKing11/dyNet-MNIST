@@ -41,23 +41,25 @@ def load(f = 'mnist_train.csv'):
             x_py.append(line[1:])
     return numpy.asarray(x_py, dtype = 'int8'), numpy.asarray(y_py, dtype = 'int8')
 
-def load_mnist(rl = False):
+def load_mnist(rl = False, pick = False):
     print('training data....')
     if not rl:
-        X = pickle.load(open('train_X.pick', 'rb'))
-        y = pickle.load(open('train_y.pick', 'rb'))
+        X = pickle.load(open('data/train_X.pick', 'rb'))
+        y = pickle.load(open('data/train_y.pick', 'rb'))
     else:
-        X,y = load()
-        pickle.dump(X, open('train_X.pick', 'wb'))
-        pickle.dump(y, open('train_y.pick', 'wb'))
+        X,y = load('data/mnist_train.csv')
+        if pick:
+            pickle.dump(X, open('data/train_X.pick', 'wb'))
+            pickle.dump(y, open('data/train_y.pick', 'wb'))
     print('testing data....')
     if not rl:
-        test_X = pickle.load(open('test_X.pick', 'rb'))
-        test_y = pickle.load(open('test_y.pick', 'rb'))
+        test_X = pickle.load(open('data/test_X.pick', 'rb'))
+        test_y = pickle.load(open('data/test_y.pick', 'rb'))
     else:
-        test_X,test_y = load('mnist_test.csv')
-        pickle.dump(test_X, open('test_X.pick', 'wb'))
-        pickle.dump(test_y, open('test_y.pick', 'wb'))
+        test_X,test_y = load('data/mnist_test.csv')
+        if pick:
+            pickle.dump(test_X, open('data/test_X.pick', 'wb'))
+            pickle.dump(test_y, open('data/test_y.pick', 'wb'))
     return (X,y), (test_X, test_y)
 
 
@@ -102,7 +104,7 @@ class cm:
 
 if __name__ == '__main__':
     
-    (X,y), (test_X, test_y) = load_mnist(rl = False)
+    (X,y), (test_X, test_y) = load_mnist(rl = False, pick = True)
     print("done loading")
     print("test x,y")
     print(X.shape, y.shape)
@@ -121,11 +123,12 @@ if __name__ == '__main__':
             
         for j in tqdm(range(int(X.shape[0]/batch_size) + 1)):
             for k in range(batch_size):
-                if (j*batch_size) + k > X.shape[0]-1: break
+                index = (j*batch_size) + k
+                if index > X.shape[0]-1: break
             # prepare input
-                little_x = X[(j*batch_size) + k].reshape(1,-1)   # must make it a vector with dimensions (1 x voc_size)
+                little_x = X[index].reshape(1,-1)   # must make it a vector with dimensions (1 x voc_size)
             # prepare output
-                little_y = dynet.inputTensor(y[(j*batch_size) + k])
+                little_y = dynet.inputTensor(y[index])
             # make a forward pass
                 pred = m.one_pass(little_x)
             # calculate loss for each example
