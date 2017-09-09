@@ -9,21 +9,11 @@ from sklearn.metrics import log_loss
 
 import dynet_config
 dynet_config.set(
-    mem=2048,          # can probably get away with 1024
+    mem=4096,          # can probably get away with 1024
     autobatch=True,    # utilize autobatching
     random_seed=1978   # simply for reproducibility here
 )
 import dynet
-
-"""
-y = dynet.inputTensor([.2, .3, .5])
-y_hat = dynet.inputTensor([.3, .4, .4])
-
-print(y.npvalue())
-print(y_hat.npvalue())
-ent = dynet.binary_log_loss(y, y_hat)
-print(ent.npvalue())
-"""
 
 
 # 0 vs 1
@@ -102,7 +92,7 @@ class cm:
 
 if __name__ == '__main__':
     
-    (X,y), (test_X, test_y) = load_mnist(rl = False, pick = True)
+    (X,y), (test_X, test_y) = load_mnist(rl = True, pick = False)
     print("done loading")
     print("test x,y")
     print(X.shape, y.shape)

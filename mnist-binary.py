@@ -9,13 +9,13 @@ from sklearn.metrics import log_loss
 
 import dynet_config
 dynet_config.set(
-    mem=2048,          # can probably get away with 1024
+    mem=4096,          # can probably get away with 1024
     autobatch=True,    # utilize autobatching
     random_seed=1978   # simply for reproducibility here
 )
 import dynet
 
-y = dynet.inputTensor([.2, .3, .5])
+
 
 # 0 vs 1
 def load(f = 'data/mnist_train.csv'):
@@ -91,7 +91,7 @@ class cm:
 
 if __name__ == '__main__':
     
-    (X, y), (test_X, test_y) = load_mnist(rl = False, pick = True)
+    (X, y), (test_X, test_y) = load_mnist(rl = True, pick = True)
     print("done loading")
     print("train x,y")
     print(X.shape, y.shape)
@@ -137,7 +137,7 @@ if __name__ == '__main__':
         if last_loss:
             cur_loss = total_loss.npvalue()[0]
             print('cur loss:', cur_loss)
-            print('\tdif:', last_loss - cur_loss)
+            print('\tdif:', cur_loss - last_loss)
             last_loss = cur_loss
         else:
             last_loss = total_loss.npvalue()[0]
@@ -154,7 +154,7 @@ if __name__ == '__main__':
             cur_mse = sum(errors)
             if last_mse:
                 print('mse:', cur_mse/len(errors))
-                print('\tdif:', (last_mse - cur_mse)/len(errors))
+                print('\tdif:', (cur_mse - last_mse)/len(errors))
                 last_mse = cur_mse
             else:
                 last_mse = cur_mse
